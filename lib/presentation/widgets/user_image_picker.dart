@@ -12,8 +12,34 @@ class UserImagePicker extends StatefulWidget {
 
 class _UserImagePickerState extends State<UserImagePicker> {
   File? _pickedImage;
+  void _bottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            TextButton.icon(
+              label: const Text('Camera'),
+              onPressed: _pickImageCamera,
+              icon: const Icon(
+                Icons.add_a_photo,
+              ),
+            ),
+            TextButton.icon(
+              label: const Text('Gallery'),
+              onPressed: _pickImageGallery,
+              icon: const Icon(
+                Icons.photo,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-  void _pickImage() async {
+  void _pickImageCamera() async {
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(
         source: ImageSource.camera, imageQuality: 50, maxWidth: 150);
@@ -26,9 +52,22 @@ class _UserImagePickerState extends State<UserImagePicker> {
     widget.onPickedImage(_pickedImage!);
   }
 
+  void _pickImageGallery() async {
+    final imagePicker = ImagePicker();
+    final pickedImage = await imagePicker.pickImage(
+        source: ImageSource.gallery, imageQuality: 50, maxWidth: 150);
+    if (pickedImage == null) {
+      return;
+    }
+    setState(() {
+      _pickedImage = File(pickedImage.path);
+    });
+    widget.onPickedImage(_pickedImage!);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
         CircleAvatar(
           radius: 40,
@@ -36,15 +75,16 @@ class _UserImagePickerState extends State<UserImagePicker> {
           foregroundImage:
               _pickedImage != null ? FileImage(_pickedImage!) : null,
         ),
-        TextButton.icon(
-            onPressed: _pickImage,
-            icon: const Icon(Icons.image),
-            label: Text(
-              'Add image',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ))
+        Positioned(
+          bottom: -11,
+          right: -11,
+          child: IconButton(
+            onPressed: _bottomSheet,
+            icon: const Icon(Icons.add),
+            iconSize: 35,
+            color: Colors.black,
+          ),
+        ),
       ],
     );
   }
